@@ -1,0 +1,278 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  STUDENT
+  COUNSELLOR
+}
+
+enum CoApplicantType {
+  SALARIED
+  SELF_EMPLOYED
+  NONE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AssetType {
+  PROPERTY
+  BANK_SAVINGS
+  INVESTMENTS
+  GOLD
+  OTHER
+}
+
+enum LiabilityType {
+  EXISTING_LOAN
+  CREDIT_CARD_DEBT
+  OTHER
+}
+
+enum CollateralType {
+  RESIDENTIAL_PROPERTY
+  COMMERCIAL_PROPERTY
+  FIXED_DEPOSIT
+  LAND
+  OTHER
+}
+
+enum DocumentType {
+  ITR
+  BANK_STATEMENT
+  SALARY_SLIP
+  CA_NET_WORTH_CERTIFICATE
+  PROPERTY_DOCS
+  PASSPORT_ID
+  ADMISSION_LETTER
+  ACADEMIC_MARKSHEET
+  OTHER
+}
+
+enum DocumentStatus {
+  NOT_UPLOADED
+  UPLOADED
+  UNDER_REVIEW
+}
+
+enum LoanType {
+  COLLATERAL
+  NON_COLLATERAL
+  BOTH
+}
+
+enum ReadinessCategory {
+  STRONG
+  MODERATE
+  NEEDS_ATTENTION
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  passwordHash   String
+  fullName       String
+  role           Role            @default(STUDENT)
+  studentProfile StudentProfile?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model StudentProfile {
+  id                String            @id @default(uuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gender            Gender            @default(MALE)
+  cibilScore        Int?
+  coApplicantType   CoApplicantType   @default(SALARIED)
+  coApplicantIncome Float             @default(0)
+  studyPlan         StudyPlan?
+  fundingSource     FundingSource?
+  financialProfile  FinancialProfile?
+  collaterals       Collateral[]
+  documents         Document[]
+  assessments       Assessment[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model StudyPlan {
+  id                 String         @id @default(uuid())
+  studentProfileId   String         @unique
+  studentProfile     StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  country            String
+  university         String
+  courseName         String
+  durationYears      Float          @default(1.0)
+  currency           String         @default("USD")
+  exchangeRateToBase Float          @default(83.5)
+  tuitionFee         Float          @default(0)
+  livingCost         Float          @default(0)
+  otherExpenses      Float          @default(0)
+  totalStudyCost     Float          @default(0)
+  isTop100University Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+model FundingSource {
+  id                        String         @id @default(uuid())
+  studentProfileId          String         @unique
+  studentProfile            StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  savings                   Float          @default(0)
+  scholarship               Float          @default(0)
+  feesAlreadyPaid           Float          @default(0)
+  familyContribution        Float          @default(0)
+  otherFunding              Float          @default(0)
+  totalAvailableFunding     Float          @default(0)
+  fundingGap                Float          @default(0)
+  estimatedLoanRequirement Float          @default(0)
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+}
+
+model FinancialProfile {
+  id               String         @id @default(uuid())
+  studentProfileId String         @unique
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  monthlyIncome    Float          @default(0)
+  annualIncome     Float          @default(0)
+  otherIncome      Float          @default(0)
+  totalAssets      Float          @default(0)
+  totalLiabilities Float          @default(0)
+  netWorth         Float          @default(0)
+  assets           Asset[]
+  liabilities      Liability[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Asset {
+  id                 String           @id @default(uuid())
+  financialProfileId String
+  financialProfile   FinancialProfile @relation(fields: [financialProfileId], references: [id], onDelete: Cascade)
+  assetType          AssetType
+  description        String
+  value              Float
+  createdAt          DateTime         @default(now())
+}
+
+model Liability {
+  id                 String           @id @default(uuid())
+  financialProfileId String
+  financialProfile   FinancialProfile @relation(fields: [financialProfileId], references: [id], onDelete: Cascade)
+  liabilityType      LiabilityType
+  description        String
+  outstandingAmount  Float
+  monthlyEmi         Float            @default(0)
+  createdAt          DateTime         @default(now())
+}
+
+model Collateral {
+  id                       String         @id @default(uuid())
+  studentProfileId         String
+  studentProfile           StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  collateralType           CollateralType
+  description              String
+  propertyValue            Float
+  eligibleAssetValue       Float
+  ownershipInfo            String
+  availableCollateralValue Float
+  hasEncumbranceCert       Boolean        @default(false)
+  hasApprovedLayout        Boolean        @default(false)
+  hasOccupancyCert         Boolean        @default(false)
+  state                    String?
+  createdAt                DateTime       @default(now())
+}
+
+model Document {
+  id               String         @id @default(uuid())
+  studentProfileId String
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  documentType     DocumentType
+  fileName         String
+  originalName     String
+  mimeType         String
+  fileSize         Int
+  filePath         String
+  status           DocumentStatus @default(UPLOADED)
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model Lender {
+  id            String           @id @default(uuid())
+  code          String           @unique
+  name          String
+  type          String
+  description   String
+  minCibilScore Int?
+  criteria      LenderCriteria[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model LenderCriteria {
+  id                    String   @id @default(uuid())
+  lenderId              String
+  lender                Lender   @relation(fields: [lenderId], references: [id], onDelete: Cascade)
+  loanType              LoanType
+  isOffered             Boolean  @default(true)
+  baseInterestRate      Float
+  boysInterestRate      Float?
+  girlsInterestRate     Float?
+  maxRate               Float?
+  requiresTop100        Boolean  @default(false)
+  requiresCollateral    Boolean  @default(false)
+  conditionNote         String?
+  requiredDocumentsList Json
+  createdAt             DateTime @default(now())
+}
+
+model Assessment {
+  id                        String                  @id @default(uuid())
+  studentProfileId          String
+  studentProfile            StudentProfile          @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+  totalStudyCost            Float
+  availableFunding          Float
+  fundingGap                Float
+  estimatedLoanRequirement  Float
+  netWorth                  Float
+  totalCollateral           Float
+  cibilScore                Int?
+  potentialRoute            String
+  readinessCategory         ReadinessCategory
+  readinessScoreExplanation Json
+  missingInformation        Json
+  documentChecklist         Json
+  disclaimer                String
+  lenderMatches             AssessmentLenderMatch[]
+  createdAt                 DateTime                @default(now())
+}
+
+model AssessmentLenderMatch {
+  id               String     @id @default(uuid())
+  assessmentId     String
+  assessment       Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  lenderId         String
+  lenderName       String
+  loanType         LoanType
+  effectiveRate    Float
+  rateNote         String?
+  isPotentialMatch Boolean
+  relevanceScore   Int
+  matchReasons     Json
+  unmetCriteria    Json
+  missingDocuments Json
+  createdAt        DateTime   @default(now())
+}

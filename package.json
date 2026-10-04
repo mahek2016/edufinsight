@@ -1,0 +1,17 @@
+{
+  "name": "gradguide-loan-assessment",
+  "version": "1.0.0",
+  "description": "GradGuide Education Loan Assessment Engine - Production Hiring Assignment",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "test": "npm --prefix backend test",
+    "prisma:generate": "npm --prefix backend run prisma:generate",
+    "prisma:seed": "npm --prefix backend run prisma:seed"
+  },
+  "author": "GradGuide Candidate",
+  "license": "ISC"
+}
