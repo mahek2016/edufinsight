@@ -59,18 +59,19 @@ Comprehensive instructions for deploying **EduFinSight** to production with sepa
    - **Environment**: `Node`
    - **Build Command**:
      ```bash
-     npm install && npx prisma generate && npm run build
+     npm install && npx prisma migrate deploy && npm run build
      ```
    - **Start Command**:
      ```bash
      npm start
      ```
+   - **Health Check Path**: `/api/health` (or `/health`)
 5. Add Environment Variables under the **Environment** tab:
    - `NODE_ENV`: `production`
-   - `PORT`: `10000` (Render will automatically bind)
-   - `DATABASE_URL`: `postgresql://...` (Your Neon/Supabase connection string)
+   - `PORT`: `10000` (Render will automatically bind or use PORT)
+   - `DATABASE_URL`: `postgresql://neondb_owner:...@ep-...neon.tech/neondb?sslmode=require`
    - `JWT_SECRET`: `your_secure_jwt_secret_random_64_chars`
-   - `CORS_ORIGIN`: `https://your-frontend.vercel.app` (Or `*` during initial launch)
+   - `CORS_ORIGIN`: `https://your-frontend.vercel.app` (or `*` during initial deployment)
    - `UPLOAD_DIR`: `./uploads`
 6. Click **Deploy Web Service**.
 7. Note down your backend URL (e.g., `https://edufinsight-api.onrender.com`).

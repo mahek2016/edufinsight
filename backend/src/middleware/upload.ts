@@ -3,7 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import { Request } from 'express';
 
-const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads');
+const rawUploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads');
+const uploadDir = path.resolve(rawUploadDir);
 
 // Ensure upload directory exists
 if (!fs.existsSync(uploadDir)) {
@@ -13,6 +14,9 @@ if (!fs.existsSync(uploadDir)) {
 // Storage configuration with random UUID / timestamp naming
 const storage = multer.diskStorage({
   destination: (_req: Request, _file: Express.Multer.File, cb) => {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
     cb(null, uploadDir);
   },
   filename: (_req: Request, file: Express.Multer.File, cb) => {

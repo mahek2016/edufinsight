@@ -22,15 +22,18 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health Check
-app.get('/api/health', (_req: Request, res: Response) => {
+// Health Check (Supports both /api/health and /health)
+const healthHandler = (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     service: 'EduFinSight Assessment Engine',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
-});
+};
+
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
 
 // Mount API Router
 app.use('/api', apiRouter);
