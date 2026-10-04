@@ -12,6 +12,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",
     "db:seed": "ts-node prisma/seed.ts",
+    "render-build": "prisma migrate deploy && prisma generate && tsc",
     "test": "vitest run"
   },
   "keywords": [

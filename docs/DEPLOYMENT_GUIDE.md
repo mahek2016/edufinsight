@@ -59,8 +59,11 @@ Comprehensive instructions for deploying **EduFinSight** to production with sepa
    - **Environment**: `Node`
    - **Build Command**:
      ```bash
-     npm install && npx prisma migrate deploy && npm run build
+     npm install && npm run render-build
      ```
+     *(Or: `npm install && npx prisma migrate deploy && npm run build`)*
+     > [!IMPORTANT]
+     > Ensure the Render "Build Command" field is completely cleared before pasting so Render's default `yarn install; yarn build` is not accidentally appended.
    - **Start Command**:
      ```bash
      npm start
